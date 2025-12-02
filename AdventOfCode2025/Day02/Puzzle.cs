@@ -1,6 +1,4 @@
-﻿using AdventOfCode2025;
-
-namespace AdventOfCode2025.Day02;
+﻿namespace AdventOfCode2025.Day02;
 
 public class Puzzle(string[] input) : BasePuzzle(input)
 {
@@ -20,7 +18,7 @@ public class Puzzle(string[] input) : BasePuzzle(input)
     {
         var idRanges = ParseInput();
         var invalidsSum = 0L;
-        
+
         foreach (var (start, end) in idRanges)
         {
             for (var id = start; id <= end; id++)
@@ -39,7 +37,7 @@ public class Puzzle(string[] input) : BasePuzzle(input)
     {
         var idRanges = ParseInput();
         var invalidsSum = 0L;
-        
+
         foreach (var (start, end) in idRanges)
         {
             for (var id = start; id <= end; id++)

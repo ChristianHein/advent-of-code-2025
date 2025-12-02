@@ -9,7 +9,14 @@ public sealed class AdventOfCode2025
 {
     public static void Main()
     {
+        PrintDay1Solution();
         PrintDay2Solution();
+    }
+
+    public static void PrintDay1Solution()
+    {
+        var puzzle = new Day02.Puzzle(File.ReadAllLines("Day02/input"));
+        Console.WriteLine(FormatDaySolutions(puzzle));
     }
 
     public static void PrintDay2Solution()

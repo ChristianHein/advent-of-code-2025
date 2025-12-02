@@ -1,43 +1,52 @@
-﻿using AdventOfCode2025.Day02;
+﻿using AdventOfCode2025.Day01;
 
-namespace AdventOfCode2025.Tests.Day02;
+namespace AdventOfCode2025.Tests.Day01;
 
 [TestFixture]
 [TestOf(typeof(Puzzle))]
 public class PuzzleTest
 {
-    private readonly string[] _realInput = File.ReadAllLines("Day02/input");
+    private readonly string[] _realInput = File.ReadAllLines("Day01/input");
 
     private readonly string[] _exampleInput =
     [
-        "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"
+        "L68",
+        "L30",
+        "R48",
+        "L5",
+        "R60",
+        "L55",
+        "L1",
+        "L99",
+        "R14",
+        "L82"
     ];
 
     [Test]
     public void UseRealInput_Part1Solution_IsCorrect()
     {
         var puzzle = new Puzzle(_realInput);
-        Assert.That(puzzle.Part1Solution(), Is.EqualTo("8576933996"));
+        Assert.That(puzzle.Part1Solution(), Is.EqualTo("1100"));
     }
 
     [Test]
     public void UseRealInput_Part2Solution_IsCorrect()
     {
         var puzzle = new Puzzle(_realInput);
-        Assert.That(puzzle.Part2Solution(), Is.EqualTo("25663320831"));
+        Assert.That(puzzle.Part2Solution(), Is.EqualTo("6358"));
     }
 
     [Test]
     public void UseExampleInput_Part1SolutionCorrect()
     {
         var puzzle = new Puzzle(_exampleInput);
-        Assert.That(puzzle.Part1Solution(), Is.EqualTo("1227775554"));
+        Assert.That(puzzle.Part1Solution(), Is.EqualTo("3"));
     }
 
     [Test]
     public void UseExampleInput_Part2SolutionCorrect()
     {
         var puzzle = new Puzzle(_exampleInput);
-        Assert.That(puzzle.Part2Solution(), Is.EqualTo("4174379265"));
+        Assert.That(puzzle.Part2Solution(), Is.EqualTo("6"));
     }
 }
