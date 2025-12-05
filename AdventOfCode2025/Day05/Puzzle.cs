@@ -1,18 +1,16 @@
 ﻿namespace AdventOfCode2025.Day05;
 
-using Range = RangeMerger.Range;
-
 public class Puzzle(string[] input) : BasePuzzle(input)
 {
     public override int Number => 5;
 
-    private (List<Range> freshRanges, List<long> idsToCheck) ParseInput()
+    private (List<IdRange> freshRanges, List<long> idsToCheck) ParseInput()
     {
-        var freshRanges = new List<Range>();
+        var freshRanges = new List<IdRange>();
         var i = 0;
         while (Input[i] != "")
         {
-            freshRanges.Add(new Range
+            freshRanges.Add(new IdRange
             {
                 Min = long.Parse(Input[i].Split('-', 2)[0]),
                 Max = long.Parse(Input[i].Split('-', 2)[1])
@@ -40,7 +38,7 @@ public class Puzzle(string[] input) : BasePuzzle(input)
         return countFreshIds.ToString();
     }
 
-    private static bool IsFresh(List<Range> freshRanges, long id)
+    private static bool IsFresh(List<IdRange> freshRanges, long id)
     {
         return freshRanges.Any(range => range.Contains(id));
     }
@@ -49,8 +47,8 @@ public class Puzzle(string[] input) : BasePuzzle(input)
     {
         var (inputRanges, _) = ParseInput();
 
-        var mergedRanges = new List<Range>();
-        mergedRanges = inputRanges.Aggregate(mergedRanges, RangeMerger.Merge);
+        var mergedRanges = new List<IdRange>();
+        mergedRanges = inputRanges.Aggregate(mergedRanges, IdRange.Merge);
 
         var totalNumbersInRanges = mergedRanges.Sum(range => range.Size);
         return totalNumbersInRanges.ToString();
