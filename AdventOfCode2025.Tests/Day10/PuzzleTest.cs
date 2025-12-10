@@ -26,7 +26,7 @@ public class PuzzleTest
     public void UseRealInput_Part2Solution_IsCorrect()
     {
         var puzzle = new Puzzle(_realInput);
-        Assert.That(puzzle.Part2Solution(), Is.EqualTo("TBD"));
+        Assert.That(puzzle.Part2Solution(), Is.EqualTo("19235"));
     }
 
     [Test]
@@ -40,6 +40,6 @@ public class PuzzleTest
     public void UseExampleInput_Part2SolutionCorrect()
     {
         var puzzle = new Puzzle(_exampleInput);
-        Assert.That(puzzle.Part2Solution(), Is.EqualTo("TBD"));
+        Assert.That(puzzle.Part2Solution(), Is.EqualTo("33"));
     }
 }

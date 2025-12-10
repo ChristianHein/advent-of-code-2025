@@ -11,14 +11,16 @@ public class Puzzle(string[] input) : BasePuzzle(input)
         public List<bool> LightTargets;
         public SortedDictionary<byte, List<byte>> ButtonIdxToLights;
         public Dictionary<byte, List<byte>> LightIdxToButtons;
-        public List<int> JoltageRequirements;
+        public List<short> JoltageTargets;
+        public SortedDictionary<byte, List<byte>> ButtonIdxToJoltages;
+        public Dictionary<byte, List<byte>> JoltageIdxToButtons;
 
         public override string ToString()
         {
             return "[" + new string(LightTargets.Select(b => b ? '#' : '.').ToArray()) + "] " +
                    string.Join(' ',
                        ButtonIdxToLights.Values.Select(lights => "(" + string.Join(',', lights) + ")")) + ' ' +
-                   "{" + string.Join(',', JoltageRequirements) + "}";
+                   "{" + string.Join(',', JoltageTargets) + "}";
         }
     }
 
@@ -32,26 +34,38 @@ public class Puzzle(string[] input) : BasePuzzle(input)
         var parts = machineStr.Split(' ');
 
         var lightTargets = parts[0].Trim('[', ']').Select(c => c == '#').ToList();
-        var buttonIdxToLights = new SortedDictionary<byte, List<byte>>();
         var lightIdxToButtons = new Dictionary<byte, List<byte>>();
-        var joltageRequirements = parts[^1].Trim('{', '}').Split(',').Select(int.Parse).ToList();
+
+        var joltageRequirements = parts[^1].Trim('{', '}').Split(',').Select(short.Parse).ToList();
+        var joltageIdxToButtons = new Dictionary<byte, List<byte>>();
+
+        var buttonIdxToLightOrJoltage = new SortedDictionary<byte, List<byte>>();
 
         for (var i = 1; i < parts.Length - 1; i++)
         {
             var buttonIdx = (byte)(i - 1);
 
-            var lights = parts[i].Trim('(', ')').Split(',').Select(byte.Parse).ToList();
-            buttonIdxToLights.Add(buttonIdx, lights);
+            var controlledIds = parts[i].Trim('(', ')').Split(',').Select(byte.Parse).ToList();
+            buttonIdxToLightOrJoltage.Add(buttonIdx, controlledIds);
 
-            foreach (var light in lights)
+            foreach (var id in controlledIds)
             {
-                if (lightIdxToButtons.TryGetValue(light, out var buttons))
+                if (lightIdxToButtons.TryGetValue(id, out var lightButtons))
                 {
-                    buttons.Add(buttonIdx);
+                    lightButtons.Add(buttonIdx);
                 }
                 else
                 {
-                    lightIdxToButtons.Add(light, [buttonIdx]);
+                    lightIdxToButtons.Add(id, [buttonIdx]);
+                }
+
+                if (joltageIdxToButtons.TryGetValue(id, out var joltageButtons))
+                {
+                    joltageButtons.Add(buttonIdx);
+                }
+                else
+                {
+                    joltageIdxToButtons.Add(id, [buttonIdx]);
                 }
             }
         }
@@ -59,24 +73,27 @@ public class Puzzle(string[] input) : BasePuzzle(input)
         return new Machine
         {
             LightTargets = lightTargets,
-            ButtonIdxToLights = buttonIdxToLights,
+            ButtonIdxToLights = buttonIdxToLightOrJoltage,
             LightIdxToButtons = lightIdxToButtons,
-            JoltageRequirements = joltageRequirements
+            JoltageTargets = joltageRequirements,
+            ButtonIdxToJoltages = buttonIdxToLightOrJoltage,
+            JoltageIdxToButtons = joltageIdxToButtons
         };
     }
 
     public override string Part1Solution()
     {
         var machines = ParseInput();
-        foreach (var machine in machines)
-        {
-            Console.WriteLine(machine.ToString());
-        }
-
-        return machines.Select(FewestButtonPresses).Sum().ToString();
+        return machines.Select(FewestButtonPressesForLights).Sum().ToString();
     }
 
-    private static int FewestButtonPresses(Machine machine)
+    public override string Part2Solution()
+    {
+        var machines = ParseInput();
+        return machines.Select(FewestButtonPressesForJoltages).Sum().ToString();
+    }
+
+    private static int FewestButtonPressesForLights(Machine machine)
     {
         var ctx = new Context();
         var solver = ctx.MkOptimize();
@@ -108,8 +125,40 @@ public class Puzzle(string[] input) : BasePuzzle(input)
         return int.Parse(solver.Model.Eval(buttonsSumVar).ToString());
     }
 
-    public override string Part2Solution()
+    private static long FewestButtonPressesForJoltages(Machine machine)
     {
-        throw new NotImplementedException();
+        var ctx = new Context();
+        var solver = ctx.MkOptimize();
+
+        var buttonVars = machine.ButtonIdxToJoltages.Keys
+            .ToDictionary(buttonIdx => "b_" + buttonIdx, buttonIdx => ctx.MkIntConst("b_" + buttonIdx));
+
+        var buttonConstraints = new List<BoolExpr>();
+        foreach (var buttonVar in buttonVars.Values)
+        {
+            buttonConstraints.Add(ctx.MkGe(buttonVar, ctx.MkInt(0)));
+        }
+
+        var joltageConstraints = new List<BoolExpr>();
+        foreach (var joltageIdx in machine.JoltageIdxToButtons.Keys)
+        {
+            var buttons = machine.JoltageIdxToButtons[joltageIdx].Select(idx => buttonVars["b_" + idx]);
+            joltageConstraints.Add(
+                ctx.MkEq(ctx.MkAdd(buttons), ctx.MkInt(machine.JoltageTargets[joltageIdx])));
+        }
+
+        var buttonsSumVar = ctx.MkAdd(buttonVars.Values);
+
+        solver.Assert(buttonConstraints);
+        solver.Assert(joltageConstraints);
+        solver.MkMinimize(buttonsSumVar);
+
+        var status = solver.Check();
+        if (status != Status.SATISFIABLE)
+        {
+            throw new InvalidOperationException();
+        }
+
+        return long.Parse(solver.Model.Eval(buttonsSumVar).ToString());
     }
 }
