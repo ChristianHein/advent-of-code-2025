@@ -31,7 +31,7 @@ public class PuzzleTest
     public void UseRealInput_Part2Solution_IsCorrect()
     {
         var puzzle = new Puzzle(_realInput);
-        Assert.That(puzzle.Part2Solution(), Is.EqualTo("TBD"));
+        Assert.That(puzzle.Part2Solution(), Is.EqualTo("1571016172"));
     }
 
     [Test]

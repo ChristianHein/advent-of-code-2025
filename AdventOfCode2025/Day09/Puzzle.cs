@@ -4,10 +4,10 @@ public class Puzzle(string[] input) : BasePuzzle(input)
 {
     public override int Number => 9;
 
-    private List<Grid.Tile> ParseInput()
+    private List<Tile> ParseInput()
     {
         return Input.Select(line =>
-                new Grid.Tile(
+                new Tile(
                     int.Parse(line.Split(',', 2)[0]),
                     int.Parse(line.Split(',', 2)[1])))
             .ToList();
@@ -17,11 +17,15 @@ public class Puzzle(string[] input) : BasePuzzle(input)
     {
         var tiles = ParseInput();
         var largestArea = 0L;
-        foreach (var tileA in tiles)
+        for (var i = 0; i < tiles.Count; i++)
         {
-            foreach (var tileB in tiles)
+            for (var j = i + 1; j < tiles.Count; j++)
             {
-                var area = (long)(Math.Max(tileA.RowIdx, tileB.RowIdx) - Math.Min(tileA.RowIdx, tileB.RowIdx) + 1) *
+                var tileA = tiles[i];
+                var tileB = tiles[j];
+
+                var area = (long)
+                           (Math.Max(tileA.RowIdx, tileB.RowIdx) - Math.Min(tileA.RowIdx, tileB.RowIdx) + 1) *
                            (Math.Max(tileA.ColIdx, tileB.ColIdx) - Math.Min(tileA.ColIdx, tileB.ColIdx) + 1);
                 largestArea = Math.Max(largestArea, area);
             }
@@ -33,11 +37,24 @@ public class Puzzle(string[] input) : BasePuzzle(input)
     public override string Part2Solution()
     {
         var tiles = ParseInput();
-        var grid = new Grid(tiles);
+        var largestArea = 0L;
+        for (var i = 0; i < tiles.Count; i++)
+        {
+            for (var j = i + 1; j < tiles.Count; j++)
+            {
+                var tileA = tiles[i];
+                var tileB = tiles[j];
 
-        grid.SetAreaOutline();
-        Console.WriteLine(grid.ToString());
+                if (InsideAreaChecker.IsStrictlyInsideArea(tiles, tileA, tileB))
+                {
+                    var area = (long)
+                               (Math.Max(tileA.RowIdx, tileB.RowIdx) - Math.Min(tileA.RowIdx, tileB.RowIdx) + 1) *
+                               (Math.Max(tileA.ColIdx, tileB.ColIdx) - Math.Min(tileA.ColIdx, tileB.ColIdx) + 1);
+                    largestArea = Math.Max(largestArea, area);
+                }
+            }
+        }
 
-        throw new NotImplementedException();
+        return largestArea.ToString();
     }
 }
